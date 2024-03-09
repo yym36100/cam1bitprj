@@ -6,7 +6,7 @@
 **  Author      : STM32CubeIDE
 **
 **  Abstract    : Linker script for STM32H7 series
-**                1024Kbytes RAM_EXEC and 544Kbytes RAM
+**                1024Kbytes RAM_AXI and 544Kbytes RAM
 **
 **                Set heap size, stack size and stack location according
 **                to application requirements.
@@ -43,25 +43,27 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-  RAM_EXEC (xrw)  : ORIGIN = 0x24000000, LENGTH = 1024K
+  ITCMRAM (xrw)   : ORIGIN = 0x00000000, LENGTH = 64K
   DTCMRAM (xrw)   : ORIGIN = 0x20000000, LENGTH = 128K
+  
+  RAM_AXI (xrw)  : ORIGIN = 0x24000000, LENGTH = 512K  
   RAM_D2 (xrw)    : ORIGIN = 0x30000000, LENGTH = 288K
   RAM_D3 (xrw)    : ORIGIN = 0x38000000, LENGTH = 64K
-  ITCMRAM (xrw)   : ORIGIN = 0x00000000, LENGTH = 64K
+    
 }
 
 /* Define output sections */
 SECTIONS
 {
-  /* The startup code goes first into RAM_EXEC */
+  /* The startup code goes first into RAM_AXI */
   .isr_vector :
   {
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
-  } >RAM_EXEC
+  } >RAM_AXI
 
-  /* The program code and other data goes into RAM_EXEC */
+  /* The program code and other data goes into RAM_AXI */
   .text :
   {
     . = ALIGN(4);
@@ -78,30 +80,30 @@ SECTIONS
 
     . = ALIGN(4);
     _etext = .;        /* define a global symbols at end of code */
-  } >RAM_EXEC
+  } >RAM_AXI
 
-  /* Constant data goes into RAM_EXEC */
+  /* Constant data goes into RAM_AXI */
   .rodata :
   {
     . = ALIGN(4);
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     . = ALIGN(4);
-  } >RAM_EXEC
+  } >RAM_AXI
 
-  .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >RAM_EXEC
+  .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >RAM_AXI
   .ARM : {
     __exidx_start = .;
     *(.ARM.exidx*)
     __exidx_end = .;
-  } >RAM_EXEC
+  } >RAM_AXI
 
   .preinit_array     :
   {
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array*))
     PROVIDE_HIDDEN (__preinit_array_end = .);
-  } >RAM_EXEC
+  } >RAM_AXI
 
   .init_array :
   {
@@ -109,7 +111,7 @@ SECTIONS
     KEEP (*(SORT(.init_array.*)))
     KEEP (*(.init_array*))
     PROVIDE_HIDDEN (__init_array_end = .);
-  } >RAM_EXEC
+  } >RAM_AXI
 
   .fini_array :
   {
@@ -117,7 +119,7 @@ SECTIONS
     KEEP (*(SORT(.fini_array.*)))
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
-  } >RAM_EXEC
+  } >RAM_AXI
 
   /* used by the startup to initialize data */
   _sidata = LOADADDR(.data);
@@ -132,7 +134,7 @@ SECTIONS
 
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
-  } >DTCMRAM AT> RAM_EXEC
+  } >DTCMRAM AT> RAM_AXI
 
   /* Uninitialized data section */
   . = ALIGN(4);
