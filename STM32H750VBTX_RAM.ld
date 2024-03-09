@@ -74,6 +74,8 @@ SECTIONS
     *(.eh_frame)
     *(.RamFunc)        /* .RamFunc sections */
     *(.RamFunc*)       /* .RamFunc* sections */
+    
+    *(.bss.pic)
 
     KEEP (*(.init))
     KEEP (*(.fini))
