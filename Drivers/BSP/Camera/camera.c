@@ -220,7 +220,7 @@ void Camera_XCLK_Set(uint8_t xclktype)
 #endif
 
 		// Init MCO1 PA8 12Mhz Output
-		HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSI48, RCC_MCODIV_4);
+		HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSI48, RCC_MCODIV_2);
 	}
 }
 
