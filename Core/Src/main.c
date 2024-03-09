@@ -53,6 +53,7 @@ SPI_HandleTypeDef hspi4;
 TIM_HandleTypeDef htim1;
 
 UART_HandleTypeDef huart4;
+DMA_HandleTypeDef hdma_uart4_tx;
 
 /* USER CODE BEGIN PV */
 extern void LCD_Test(void);
@@ -81,7 +82,12 @@ uint16_t pic[FrameWidth][FrameHeight];
 uint32_t DCMI_FrameIsReady=0;
 uint32_t Camera_FPS=0;
 
+uint32_t uart_done=1;
 
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
+	 uart_done=1;
+}
 void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
 {
 	static uint32_t count = 0,tick = 0;
@@ -160,6 +166,11 @@ int main(void)
 			DCMI_FrameIsReady = 0;
 			ST7735_FillRGBRect(&st7735_pObj, 0, 0, (uint8_t*) &pic[20][0], ST7735Ctx.Width, 80);
 			HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+			if(uart_done){
+				uart_done = 0;
+				HAL_UART_Transmit(&huart4, "Start ", 6, 100);
+				HAL_UART_Transmit_DMA(&huart4, &pic, FrameWidth * FrameHeight * 2 / 4);
+			}
 
 			sprintf((char*) &text, "%dFPS", Camera_FPS);
 			LCD_ShowString(5, 5, 60, 16, 12, text);
@@ -459,7 +470,7 @@ static void MX_UART4_Init(void)
 
   /* USER CODE END UART4_Init 1 */
   huart4.Instance = UART4;
-  huart4.Init.BaudRate = 115200;
+  huart4.Init.BaudRate = 1000000;
   huart4.Init.WordLength = UART_WORDLENGTH_9B;
   huart4.Init.StopBits = UART_STOPBITS_1;
   huart4.Init.Parity = UART_PARITY_EVEN;
@@ -504,6 +515,9 @@ static void MX_DMA_Init(void)
   /* DMA1_Stream0_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
+  /* DMA1_Stream1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
 
 }
 
